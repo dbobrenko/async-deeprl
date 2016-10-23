@@ -22,8 +22,8 @@ python asynq.py --env_name 'Pong-v0'
 ```
 All available environments you can check [here](https://gym.openai.com/envs). Note that current implementation supports environments only with visual raw pixel observations. 
 Tested OpenAI Gym environments:
-*'Breakout-v0'
-*'Pong-v0'
+* Breakout-v0
+* Pong-v0
 
 **To use pretrained model**, or change log folder, just pass`[--logdir PATH]` flag:
 ```
@@ -38,4 +38,7 @@ python asynq.py --logdir path/to/checkpoint/folder/ --threads 2 --play
 ```
 
 ## Pretrained models
+*In progress*.
+
+## Detailed implementation description and theory
 *In progress*.
