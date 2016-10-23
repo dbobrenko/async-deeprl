@@ -35,7 +35,7 @@ python asynq.py --logdir path/to/checkpoint/folder/
 python asynq.py --logdir path/to/checkpoint/folder/ --threads 2 --play
 ```
 
-Also, you can change amount of spawned threads with `[--threads NUMBER]`, use GPU instead of cpu with `[--gpu]` flag, etc.
+Also, you can change amount of spawned threads with `[--threads NUMBER]` (by default = 8), use GPU instead of cpu with `[--gpu]` flag, etc.
 Whole list with available flags you can check with `[--help]` flag.
 
 ## Pretrained models
