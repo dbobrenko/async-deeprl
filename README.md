@@ -25,12 +25,17 @@ Tested OpenAI Gym environments:
 *'Breakout-v0'
 *'Pong-v0'
 
-If you want to use pretrained model, or change log folder, just path with [--logdir PATH] flag:
+**To use pretrained model**, or change log folder, just pass`[--logdir PATH]` flag:
 ```
-python asynq.py --logdir path/to/checkpoint/folder
+python asynq.py --logdir path/to/checkpoint/folder/
 ```
-Also, you can change amount of spawned threads with [--threads NUMBER], use GPU instead of cpu with [--gpu] flag, etc.
-Whole list with available flags you can check with [--help] flag.
+Also, you can change amount of spawned threads with `[--threads NUMBER]`, use GPU instead of cpu with `[--gpu]` flag, etc.
+Whole list with available flags you can check with `[--help]` flag.
+
+**To play without training** and logging, pass `[--play]` flag:
+```
+python asynq.py --logdir path/to/checkpoint/folder/ --threads 2 --play
+```
 
 ## Pretrained models
 *In progress*.
