@@ -58,16 +58,21 @@ class GymEnvironment:
                info"""
         action = self.action_space[action_index]
         accum_reward = 0
+        round_end = False
         if self.is_atari:
             start_lives = self.env.ale.lives()
         for _ in range(self.action_repeat):
             s, r, term, info = self.env.step(action)
+            s = self.preprocess(s)
             accum_reward += r
-            if self.is_atari and start_lives != self.env.ale.lives():
-                break
             if term:
                 break
-        return self.preprocess(s), accum_reward, term, info
+            if self.is_atari and start_lives != self.env.ale.lives():
+                round_end = True
+                self.stacked_s = None
+                break
+        info['round_end'] = round_end
+        return s, accum_reward, term, info
 
     def render(self):
         self.env.render()

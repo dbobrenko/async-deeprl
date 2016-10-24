@@ -24,7 +24,7 @@ EPS_MIN_SAMPLES = 4 * [0.1] + 3 * [0.01] + 3 * [0.5]
 tf.app.flags.DEFINE_integer("threads", 8, "Number of threads to use")
 tf.app.flags.DEFINE_boolean("gpu", False, "Use CPU or GPU for training (default is CPU)")
 # Training settings
-tf.app.flags.DEFINE_boolean("nstep", False, "Use N-step Q-Learning instead of 1-step.")
+#tf.app.flags.DEFINE_boolean("nstep", False, "Use N-step Q-Learning instead of 1-step.")
 tf.app.flags.DEFINE_boolean("play", False, "Disables training and logging, shows playing agents")
 tf.app.flags.DEFINE_integer("total_frames", 200000000, "Total frames (across all threads)")
 tf.app.flags.DEFINE_integer("update_interval", 40000, "Update target network after X frames")
@@ -115,7 +115,7 @@ def async_q_learner(agent, env, sess, agent_summary, saver, thread_idx=0):
             # Get action index with maximum expected future reward
             action_index = np.argmax(reward_per_action)
             # Execute an action and receive new state, reward for action
-            s, r, term, _ = env.step(action_index)
+            s, r, term, info = env.step(action_index)
             episode_reward += r  # Logging
             r = np.clip(r, -1, 1)
             # 1-step Q-Learning: add discounted expected future reward
@@ -127,6 +127,9 @@ def async_q_learner(agent, env, sess, agent_summary, saver, thread_idx=0):
                 episode_rewards.append(episode_reward)  # Logging
                 s = env.reset()
                 episode_reward = 0
+                break
+            # Check for Atari end of round
+            if 'round_end' in info and info['round_end']:
                 break
         # Apply asynchronous gradient update to shared agent
         agent.train(np.vstack(batch_states), batch_actions, batch_rewards)
