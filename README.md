@@ -16,7 +16,7 @@ To train your own model on 'Atari 2600 Breakout', simply run:
 python asynq.py
 ```
 
-To specify your own environment, use env_name flag, e.g:
+To specify your own environment, use `[--env_name NAME]` flag, e.g:
 ```
 python asynq.py --env_name 'Pong-v0'
 ```

@@ -11,7 +11,7 @@ from math import ceil
 
 class DQNModel:
     def __init__(self, lr=0.001, ch=4, h=84, w=84, action_size=3, fc3_size=256, dropout=0.5,
-                 gradient_clip=40, rms_decay=0.99, use_locking=True, global_step=None):
+                 gradient_clip=40, rms_decay=0.99, global_step=None):
         """Creates Deep Q-Network.
         :lr: tensorflow Variable or float - learning rate.
         :action_size: size of action space.
@@ -54,9 +54,7 @@ class DQNModel:
             action_onehot = tf.one_hot(self._a_ph, self.action_size, 1.0, 0.0, name='action_onehot')
             action_q = tf.reduce_sum(tf.mul(self._q_values, action_onehot), reduction_indices=1)
             self._loss = tf.reduce_mean(tf.square(self._y_ph - action_q))
-            self._opt = tf.train.RMSPropOptimizer(self._lr_ph,
-                                                  decay=rms_decay,
-                                                  use_locking=use_locking)
+            self._opt = tf.train.RMSPropOptimizer(self._lr_ph, decay=rms_decay)
             self._gradvals = self._opt.compute_gradients(self._loss, self.W.values())
             gradvals_clip = []
             for grad, var in self._gradvals:

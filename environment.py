@@ -3,14 +3,14 @@ from skimage.color import rgb2gray
 import gym
 import numpy as np
 
-__custom_actions__ = {'Breakout-v0': [1, 2, 3],
+__custom_actions__ = {'Breakout-v0': [1, 4, 5],
                       'Pong-v0': [1, 2, 3]
                       }
 
 
 class GymEnvironment:
     """Small wrapper around OpenAI Gym environment"""
-    def __init__(self, name, action_repeat=4, memory_len=4, w=84, h=84, verbose=True):
+    def __init__(self, name, action_repeat=4, memory_len=4, w=84, h=84, is_atari=True, verbose=True):
         self.env = gym.make(name)
         self.memory_len = memory_len
         self.W = w
@@ -20,6 +20,7 @@ class GymEnvironment:
         self.stacked_s = None
         self.action_space = list(range(self.env.action_space.n))
         self.action_size = len(self.action_space)
+        self.is_atari = is_atari
         for key in __custom_actions__:
             if key == self.env.spec.id:
                 self.set_custom_actions(__custom_actions__[key])
@@ -50,16 +51,20 @@ class GymEnvironment:
     def step(self, action_index):
         """Executes action and repeat it on the next X frames
         :param action_index: action index (0-based)
-        :rtype tuple(
-               preprocessed and stacked new state,
+        :rtype 4 elements tuple:
+               new state,
                accumulated reward over skipped frames
                if it is a terminal state,
-               info)"""
+               info"""
         action = self.action_space[action_index]
         accum_reward = 0
+        if self.is_atari:
+            start_lives = self.env.ale.lives()
         for _ in range(self.action_repeat):
             s, r, term, info = self.env.step(action)
             accum_reward += r
+            if self.is_atari and start_lives != self.env.ale.lives():
+                break
             if term:
                 break
         return self.preprocess(s), accum_reward, term, info

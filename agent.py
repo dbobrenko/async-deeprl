@@ -23,7 +23,7 @@ class QlearningAgent:
         with tf.variable_scope('train_to_target'):
             self.model2target_op = {}
             for k in self.model.W:
-                self.model2target_op[k] = self.model_target.W[k].assign(self.model.W[k], use_locking=True)
+                self.model2target_op[k] = self.model_target.W[k].assign(self.model.W[k])
 
     def init(self, session):
         """Sets session. Must be called before agent usage."""

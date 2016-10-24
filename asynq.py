@@ -55,7 +55,7 @@ if not FLAGS.gpu:
 # Thread shared lists for logging
 episode_q = []
 episode_rewards = []
-
+global_epsilons = [0.] * FLAGS.threads
 
 def update_epsilon(frames, eps_steps, eps_min):
     """Anneals epsilon based on current frame"""
@@ -132,6 +132,7 @@ def async_q_learner(agent, env, sess, agent_summary, saver, thread_idx=0):
         agent.train(np.vstack(batch_states), batch_actions, batch_rewards)
         # Anneal epsilon
         epsilon = update_epsilon(agent.frame, FLAGS.eps_steps, eps_min)
+        global_epsilons[thread_idx] = epsilon # Logging
         # Logging and target network update
         if thread_idx == 0:
             if agent.frame - last_target_update >= FLAGS.update_interval:
@@ -141,7 +142,8 @@ def async_q_learner(agent, env, sess, agent_summary, saver, thread_idx=0):
                 last_logging = agent.frame
                 avg_r = np.mean(episode_rewards or 0.)
                 avg_q = np.mean(episode_q or 0.)
-                print("%s. Avg.Ep.R: %.4f. Avg.Ep.Q: %.2f. Eps: %.2f. T: %d" %
+                avg_eps = np.mean(global_epsilons)
+                print("%s. Avg.Ep.R: %.4f. Avg.Ep.Q: %.2f. Avg.Eps: %.2f. T: %d" %
                       (str(datetime.now())[11:19], avg_r, avg_q, epsilon, agent.frame))
                 saver.save(sess, os.path.join(FLAGS.logdir, "sess.ckpt"), global_step=agent.frame)
                 print('Saving session to %s' % FLAGS.logdir)
@@ -149,7 +151,7 @@ def async_q_learner(agent, env, sess, agent_summary, saver, thread_idx=0):
                     'total_frame_step': agent.frame,
                     'episode_avg_reward': avg_r,
                     'avg_q_value': avg_q,
-                    'epsilon': epsilon,
+                    'epsilon': avg_eps,
                     'learning_rate': agent.lr
                 })
                 # Clear shared logs
@@ -169,15 +171,14 @@ def run(worker):
                                    w=FLAGS.width,
                                    h=FLAGS.height,
                                    name=FLAGS.env_name))
-    with tf.device('/cpu:0' if not FLAGS.gpu else '/gpu:0'):
-        agent = QlearningAgent(lr=FLAGS.lr,
-                               action_size=envs[0].action_size,
-                               channels=FLAGS.memory_len,
-                               w=FLAGS.width,
-                               h=FLAGS.height,
-                               gradient_clip=FLAGS.gradient_clip,
-                               rms_decay=FLAGS.rms_decay,
-                               total_frames=FLAGS.total_frames)
+    agent = QlearningAgent(lr=FLAGS.lr,
+                           action_size=envs[0].action_size,
+                           channels=FLAGS.memory_len,
+                           w=FLAGS.width,
+                           h=FLAGS.height,
+                           gradient_clip=FLAGS.gradient_clip,
+                           rms_decay=FLAGS.rms_decay,
+                           total_frames=FLAGS.total_frames)
     saver = tf.train.Saver(tf.all_variables(), max_to_keep=2)
     init_op = tf.initialize_all_variables()
     if not os.path.exists(FLAGS.logdir):
