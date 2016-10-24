@@ -26,7 +26,7 @@ tf.app.flags.DEFINE_boolean("gpu", False, "Use CPU or GPU for training (default 
 # Training settings
 #tf.app.flags.DEFINE_boolean("nstep", False, "Use N-step Q-Learning instead of 1-step.")
 tf.app.flags.DEFINE_boolean("play", False, "Disables training and logging, shows playing agents")
-tf.app.flags.DEFINE_integer("total_frames", 200000000, "Total frames (across all threads)")
+tf.app.flags.DEFINE_integer("total_frames", 80000000, "Total frames (across all threads)")
 tf.app.flags.DEFINE_integer("update_interval", 40000, "Update target network after X frames")
 tf.app.flags.DEFINE_float("eps_steps", 4000000.0, "Decrease epsilon over X frames")
 tf.app.flags.DEFINE_float("eps_start", 1.0, "Starting epsilon (initial exploration chance)")
@@ -35,8 +35,8 @@ tf.app.flags.DEFINE_integer("t_max", 5, "Maximum batch size")
 tf.app.flags.DEFINE_integer("action_repeat", 4, "Applies last action to X next frames")
 tf.app.flags.DEFINE_integer("memory_len", 4, "Memory length - number of stacked input images")
 # Environment settings
-tf.app.flags.DEFINE_boolean("render", False, "Render frames? Significantly slows training process")
 tf.app.flags.DEFINE_string("env_name", 'Breakout-v0', "Environment name (available all OpenAI Gym environments)")
+tf.app.flags.DEFINE_boolean("render", False, "Render frames? Significantly slows training process")
 tf.app.flags.DEFINE_integer("width", 84, "Screen image width")
 tf.app.flags.DEFINE_integer("height", 84, "Screen image height")
 # Logging
@@ -56,6 +56,7 @@ if not FLAGS.gpu:
 episode_q = []
 episode_rewards = []
 global_epsilons = [0.] * FLAGS.threads
+training_finished = False
 
 def update_epsilon(frames, eps_steps, eps_min):
     """Anneals epsilon based on current frame"""
@@ -81,7 +82,7 @@ def play(agent, env, sess=None, summary=None, saver=None, thread_idx=None):
 
 def async_q_learner(agent, env, sess, agent_summary, saver, thread_idx=0):
     """Starts asynchronous 1-step Q-Learning.
-    Can be used as a worker for threading.Thread or multiprocessing.Process
+    Can be used as a worker for threading.Thread
     :agent: agent.QlearningAgent object or any derived object
     :env: environment.GymEnvironment object or any derived wrapper
     :sess: tensorflow.Session
@@ -118,8 +119,10 @@ def async_q_learner(agent, env, sess, agent_summary, saver, thread_idx=0):
             s, r, term, info = env.step(action_index)
             episode_reward += r  # Logging
             r = np.clip(r, -1, 1)
+            # Check for Atari end of round
+            round_end = 'round_end' in info and info['round_end']
             # 1-step Q-Learning: add discounted expected future reward
-            if not term:
+            if not term and not round_end:# and not FLAGS.nstep:
                 r += FLAGS.gamma * agent.predict_target(s)
             batch_rewards.append(r)
             batch_actions.append(action_index)
@@ -128,8 +131,9 @@ def async_q_learner(agent, env, sess, agent_summary, saver, thread_idx=0):
                 s = env.reset()
                 episode_reward = 0
                 break
-            # Check for Atari end of round
-            if 'round_end' in info and info['round_end']:
+            # Used in Atari games for splitting rounds into separate games
+            if round_end:
+                term = True
                 break
         # Apply asynchronous gradient update to shared agent
         agent.train(np.vstack(batch_states), batch_actions, batch_rewards)
@@ -149,7 +153,7 @@ def async_q_learner(agent, env, sess, agent_summary, saver, thread_idx=0):
                 print("%s. Avg.Ep.R: %.4f. Avg.Ep.Q: %.2f. Avg.Eps: %.2f. T: %d" %
                       (str(datetime.now())[11:19], avg_r, avg_q, epsilon, agent.frame))
                 saver.save(sess, os.path.join(FLAGS.logdir, "sess.ckpt"), global_step=agent.frame)
-                print('Saving session to %s' % FLAGS.logdir)
+                print('Session saved to %s' % FLAGS.logdir)
                 agent_summary.write_summary({
                     'total_frame_step': agent.frame,
                     'episode_avg_reward': avg_r,
@@ -160,6 +164,8 @@ def async_q_learner(agent, env, sess, agent_summary, saver, thread_idx=0):
                 # Clear shared logs
                 del episode_q[:]
                 del episode_rewards[:]
+    global training_finished
+    training_finished = True
     print('Thread %d. Training finished. Total frames: %s' % (thread_idx, agent.frame))
 
 
@@ -199,7 +205,7 @@ def run(worker):
         for p in processes:
             p.daemon = True
             p.start()
-        while True:
+        while not training_finished:
             if FLAGS.render:
                 for i in range(FLAGS.threads):
                     envs[i].render()
