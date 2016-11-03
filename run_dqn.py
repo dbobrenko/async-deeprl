@@ -13,7 +13,7 @@ from asyncrl.agent import QlearningAgent, AgentSummary
 import time
 import os
 
-#random.seed(201)  # To reproduce minimum epsilon sampling
+random.seed(201)  # To reproduce minimum epsilon sampling
 # Distribution of epsilon exploration chances (0.1 = 0.4; 0.01 = 0.3; 05 = 0.3)
 EPS_MIN_SAMPLES = 4 * [0.1] + 3 * [0.01] + 3 * [0.5]
 
@@ -210,10 +210,10 @@ def run(worker):
         sess.run(tf.initialize_all_variables())
         if not os.path.exists(FLAGS.logdir):
             os.makedirs(FLAGS.logdir)
-            ckpt = tf.train.latest_checkpoint(FLAGS.logdir)
-            if ckpt is not None:
-                saver.restore(sess, ckpt)
-                print('Restoring session from %s' % ckpt)
+        ckpt = tf.train.latest_checkpoint(FLAGS.logdir)
+        if ckpt is not None:
+            saver.restore(sess, ckpt)
+            print('Restoring session from %s' % ckpt)
         summary = AgentSummary(FLAGS.logdir, agent, FLAGS.env)
         for i in range(FLAGS.threads):
             processes.append(th.Thread(target=worker, args=(agent, envs[i], sess, summary, saver, i,)))
