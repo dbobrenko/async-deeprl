@@ -4,12 +4,12 @@ An attempt to implement asynchronous one-step Q-Learning from Google DeepMind's 
 **Intuition and detailed implementation description.**
 *In progress*.
 
-Benchmarks for current implementation of Asynchronous one-step Q-Learning (GPU: **GTX 980 Ti**; CPU: **Core i7-3770 @ 3.40GHz (4 cores, 8 threads)**):
-| **Input**      | **Device** | **FPS** |
-|:--------------:|:----------:|:-------:|
-| 84x84x4 screen | GPU        | 540     |
-| 84x84x4 screen | CPU        | 315     |
+Benchmarks for current implementation of Asynchronous one-step Q-Learning
 
+| **Device**                                          | **Input shape** | **FPS**   |
+|:----------------------------------------------------|:---------------:|:---------:|
+| GPU **GTX 980 Ti**                                  | 84x84x4         | **540**   |
+| CPU **Core i7-3770 @ 3.40GHz (4 cores, 8 threads)** | 84x84x4         | **315**   |
 
 ## Requirements
 1. Linux based OS or Mac OS X;
