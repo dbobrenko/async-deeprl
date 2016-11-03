@@ -27,7 +27,7 @@ Benchmarks for current implementation of Asynchronous one-step Q-Learning:
 *Keras* and *numpy* already comes with listed packages.
 
 ## Usage
-**To train** your own model on 'Atari 2600 Breakout', simply run:
+**To train** your own model on 'Atari 2600 SpaceInvaders', simply run:
 ```
 python run_dqn.py
 ```
@@ -39,9 +39,8 @@ python run_dqn.py --env Pong-v0
 All available environments you can check [here](https://gym.openai.com/envs). 
 Note, that current implementation supports environments only with raw pixels observations.
 Tested OpenAI Gym environments:
-* Breakout-v0
-* Pong-v0
 * SpaceInvaders-v0
+* Pong-v0
 
 To change amount of spawned threads, use `--threads` (by default = 8) flag; to use GPU instead of cpu, pass `--gpu` flag.
 All available flags can be checked by: `python run_dqn.py --help`

@@ -30,7 +30,7 @@ tf.app.flags.DEFINE_integer("tmax", 5, "Maximum batch size")
 tf.app.flags.DEFINE_integer("action_repeat", 4, "Applies last action to X next frames")
 tf.app.flags.DEFINE_integer("memory_len", 4, "Memory length - number of stacked input images")
 # Environment settings
-tf.app.flags.DEFINE_string("env", 'Breakout-v0', "Environment name (available all OpenAI Gym environments)")
+tf.app.flags.DEFINE_string("env", 'SpaceInvaders-v0', "Environment name (available all OpenAI Gym environments)")
 tf.app.flags.DEFINE_boolean("render", False, "Render frames? Significantly slows down training process")
 tf.app.flags.DEFINE_integer("width", 84, "Screen image width")
 tf.app.flags.DEFINE_integer("height", 84, "Screen image height")
@@ -78,7 +78,8 @@ def evaluate():
         ckpt = tf.train.latest_checkpoint(FLAGS.logdir)
         if ckpt is not None:
             tf.train.Saver().restore(sess, ckpt)
-            print('Restoring session from %s' % ckpt)
+            agent.update_target()
+            print('Session was restored from %s' % ckpt)
         else:
             print('ERROR! No checkpoint found at', FLAGS.logdir)
             return
@@ -150,7 +151,7 @@ def train_async_dqn(agent, env, sess, agent_summary, saver, thread_idx=0):
             # Execute an action and receive new state, reward for action
             screen, reward, terminal, _ = env.step(action_index)
             reward = np.clip(reward, -1, 1)
-            # 1-step Q-Learning: add discounted expected future reward
+            # one-step Q-Learning: add discounted expected future reward
             if not terminal:
                 reward += FLAGS.gamma * agent.predict_target(screen)
             batch_rewards.append(reward)
@@ -213,6 +214,7 @@ def run(worker):
         ckpt = tf.train.latest_checkpoint(FLAGS.logdir)
         if ckpt is not None:
             saver.restore(sess, ckpt)
+            agent.update_target()
             print('Restoring session from %s' % ckpt)
         summary = AgentSummary(FLAGS.logdir, agent, FLAGS.env)
         for i in range(FLAGS.threads):

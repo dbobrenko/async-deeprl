@@ -53,8 +53,8 @@ class GymWrapper:
         :new_game: if True - repeats passed screen `memlen` times
                    otherwise - stacks with previous screens"
         :rtype: image in [0.0; 1.0] stacked with last `memlen-1` screens; shape=[1, h, w, memlen]"""
-        luminance = screen.astype('float32').mean(2) # no need in true grayscale, just take mean
-        s = imresize(luminance, (self.W, self.H)).astype('float32') / 255 # convert into [0.0; 1.0]
+        gray = screen.astype('float32').mean(2) # no need in true grayscale, just take mean
+        s = imresize(gray, (self.W, self.H)).astype('float32') * (1. / 255) # convert into [0.0; 1.0]
         s = s.reshape(1, s.shape[0], s.shape[1], 1)
         if new_game or self.stacked_s is None:
             self.stacked_s = np.repeat(s, self.memlen, axis=3)
