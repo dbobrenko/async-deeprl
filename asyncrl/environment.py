@@ -109,7 +109,7 @@ class GymALE(GymWrapper):
     def preprocess(self, screen, new_game=False):
         luminance = screen.astype('float32').mean(2) # no need in true grayscale, just take mean
         luminance = luminance[:-15, :] # crop bottom Atari specific border
-        s = imresize(luminance, (self.W, self.H)).astype('float32') / 255
+        s = imresize(luminance, (self.W, self.H)).astype('float32') * (1. / 255) # convert into [0.0; 1.0]
         s = s.reshape(1, s.shape[0], s.shape[1], 1)
         if new_game or self.stacked_s is None:
             self.stacked_s = np.repeat(s, self.memlen, axis=3)
@@ -131,4 +131,8 @@ class GymALE(GymWrapper):
                 term = True
             if term:
                 break
+            prev_s = s
+        # Takes maximum value for each pixel value over the current and previous frame
+        # Used to get round Atari sprites flickering (Mnih et al. (2015))
+        s = np.maximum.reduce([s, prev_s])
         return self.preprocess(s), accum_reward, term, info

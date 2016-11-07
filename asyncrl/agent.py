@@ -27,17 +27,24 @@ class QlearningAgent:
             self.action = tf.placeholder('int32', [None], name='action')
             self.reward = tf.placeholder('float32', [None], name='reward')
             model, self.state, self.q_values = self._build_model(h, w, channels)
-            weights = model.trainable_weights
+            self.weights = model.trainable_weights
         with tf.variable_scope('optimizer'):
             action_onehot = tf.one_hot(self.action, self.action_size, 1.0, 0.0)
             q_value = tf.reduce_sum(tf.mul(self.q_values, action_onehot), reduction_indices=1)
             self.loss = tf.reduce_mean(tf.square(self.reward - q_value))
-            self.train_op = tf.train.AdamOptimizer(lr).minimize(self.loss, var_list=weights)
+            #self.train_op = tf.train.AdamOptimizer(lr, epsilon=0.1).minimize(self.loss, var_list=self.weights)
+            opt = tf.train.AdamOptimizer(lr, epsilon=0.1)
+            gradvals = opt.compute_gradients(self.loss, self.weights)
+            gradvals_clip = []
+            for grad, var in gradvals:
+                grad = tf.clip_by_norm(grad, 40.)
+                gradvals_clip.append((grad, var))
+            self.train_op = opt.apply_gradients(gradvals_clip)
         with tf.variable_scope('target_network'):
             target_m, self.target_state, self.target_q_values = self._build_model(h, w, channels)
             target_w = target_m.trainable_weights
         with tf.variable_scope('target_update'):
-            self.target_update = [target_w[i].assign(weights[i]) for i in range(len(target_w))]
+            self.target_update = [target_w[i].assign(self.weights[i]) for i in range(len(target_w))]
 
     @property
     def frame(self):
