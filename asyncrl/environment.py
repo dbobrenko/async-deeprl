@@ -122,6 +122,7 @@ class GymALE(GymWrapper):
         accum_reward = 0
         if self.has_lives:
             start_lives = self.env.ale.lives()
+        prev_s = None
         for _ in range(self.actrep):
             s, r, term, info = self.env.step(action)
             accum_reward += r
@@ -134,5 +135,6 @@ class GymALE(GymWrapper):
             prev_s = s
         # Takes maximum value for each pixel value over the current and previous frame
         # Used to get round Atari sprites flickering (Mnih et al. (2015))
-        s = np.maximum.reduce([s, prev_s])
+        if prev_s is not None:
+            s = np.maximum.reduce([s, prev_s])
         return self.preprocess(s), accum_reward, term, info
