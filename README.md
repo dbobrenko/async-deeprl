@@ -2,11 +2,8 @@
 An attempt to implement asynchronous one-step Q-Learning from Google DeepMind's paper ["Asynchronous Methods for Deep Reinforcement Learning", Mnih et al., 2016.](https://arxiv.org/abs/1602.01783)
 
 **Intuition and detailed implementation description:**
+
 https://dbobrenko.github.io/2016/11/03/async-deeprl.html
-
-Agent trained over 26 millions of frames:
-
-[![Alt text for your video](http://img.youtube.com/vi/YtKdFcfdq9Y/0.jpg)](https://www.youtube.com/watch?v=YtKdFcfdq9Y?autoplay=1&amp;loop=1&amp;rel=0&amp;showinfo=0&amp;playlist=YtKdFcfdq9Y)
 
 Benchmarks for current implementation of Asynchronous one-step Q-Learning:
 
