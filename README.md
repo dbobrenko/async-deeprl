@@ -9,8 +9,8 @@ Benchmarks for current implementation of Asynchronous one-step Q-Learning:
 
 | **Device**                                          | **Input shape** | **FPS** (skipped frames does not count)   |
 |:----------------------------------------------------|:---------------:|:-----------------------------------------:|
-| GPU **GTX 980 Ti**                                  | 84x84x4         | **540**                                   |
-| CPU **Core i7-3770 @ 3.40GHz (4 cores, 8 threads)** | 84x84x4         | **315**                                   |
+| GPU **GTX 980 Ti**                                  | 84x84x4         | **530**                                   |
+| CPU **Core i7-3770 @ 3.40GHz (4 cores, 8 threads)** | 84x84x4         | **300**                                   |
 
 ## Requirements
 1. Linux based OS or Mac OS X;

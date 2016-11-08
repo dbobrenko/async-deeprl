@@ -20,6 +20,7 @@ class QlearningAgent:
         self.lr_initial = lr
         self.action_size = action_size
         self.global_step = tf.Variable(0, name='frame', trainable=False)
+        self.learning_rate = tf.Variable(lr, name='lr', trainable=False)
         self.frame_inc_op = self.global_step.assign_add(1, use_locking=True)
         K.set_session(session)
         self.sess = session
@@ -27,14 +28,13 @@ class QlearningAgent:
             self.action = tf.placeholder('int32', [None], name='action')
             self.reward = tf.placeholder('float32', [None], name='reward')
             model, self.state, self.q_values = self._build_model(h, w, channels)
-            self.weights = model.trainable_weights
+            model_weights = model.trainable_weights
         with tf.variable_scope('optimizer'):
             action_onehot = tf.one_hot(self.action, self.action_size, 1.0, 0.0)
             q_value = tf.reduce_sum(tf.mul(self.q_values, action_onehot), reduction_indices=1)
             self.loss = tf.reduce_mean(tf.square(self.reward - q_value))
-            #self.train_op = tf.train.AdamOptimizer(lr, epsilon=0.1).minimize(self.loss, var_list=self.weights)
-            opt = tf.train.AdamOptimizer(lr, epsilon=0.1)
-            gradvals = opt.compute_gradients(self.loss, self.weights)
+            opt = tf.train.AdamOptimizer(lr)
+            gradvals = opt.compute_gradients(self.loss, model_weights)
             gradvals_clip = []
             for grad, var in gradvals:
                 grad = tf.clip_by_norm(grad, 40.)
@@ -44,8 +44,7 @@ class QlearningAgent:
             target_m, self.target_state, self.target_q_values = self._build_model(h, w, channels)
             target_w = target_m.trainable_weights
         with tf.variable_scope('target_update'):
-            self.target_update = [target_w[i].assign(self.weights[i]) for i in range(len(target_w))]
-
+            self.target_update = [target_w[i].assign(model_weights[i]) for i in range(len(target_w))]
     @property
     def frame(self):
         """:rtype: global frame"""

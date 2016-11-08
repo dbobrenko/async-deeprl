@@ -15,7 +15,8 @@ class GymWrapperFactory:
         if hasattr(env, 'ale'): # Arcade Learning Environment
             return GymALE(env, actrep=actrep, memlen=memlen, w=w, h=h, random_start=random_start)
         else: # Basic Gym environment wrapper
-            return GymWrapper(env, actrep=actrep, memlen=memlen, w=w, h=h, random_start=random_start)
+            return GymWrapper(env, actrep=actrep, memlen=memlen,
+                              w=w, h=h, random_start=random_start)
 
 class GymWrapper:
     """A small wrapper around OpenAI Gym ALE"""
@@ -32,7 +33,7 @@ class GymWrapper:
         elif hasattr(self.env.action_space, "shape"):
             self.action_space = list(np.eye(self.env.action_space.shape))
         else:
-            raise ValueError("Unsupported environment '%s'. Unable to get action space size." % self.env.spec.id)
+            raise ValueError("Environment %s: Unable to get action space size." % self.env.spec.id)
         self.action_size = len(self.action_space)
         self.stacked_s = None
         for key in __custom_actions__:
@@ -52,9 +53,11 @@ class GymWrapper:
         :screen: numpy array image in [0; 255] range with shape=[H, W, C]
         :new_game: if True - repeats passed screen `memlen` times
                    otherwise - stacks with previous screens"
-        :rtype: image in [0.0; 1.0] stacked with last `memlen-1` screens; shape=[1, h, w, memlen]"""
+        :rtype: image in [0.0; 1.0] stacked with last `memlen-1` screens; 
+                shape=[1, h, w, memlen]"""
         gray = screen.astype('float32').mean(2) # no need in true grayscale, just take mean
-        s = imresize(gray, (self.W, self.H)).astype('float32') * (1. / 255) # convert into [0.0; 1.0]
+        # convert values into [0.0; 1.0] range
+        s = imresize(gray, (self.W, self.H)).astype('float32') * (1. / 255)
         s = s.reshape(1, s.shape[0], s.shape[1], 1)
         if new_game or self.stacked_s is None:
             self.stacked_s = np.repeat(s, self.memlen, axis=3)
@@ -108,8 +111,14 @@ class GymALE(GymWrapper):
 
     def preprocess(self, screen, new_game=False):
         luminance = screen.astype('float32').mean(2) # no need in true grayscale, just take mean
-        luminance = luminance[:-15, :] # crop bottom Atari specific border
-        s = imresize(luminance, (self.W, self.H)).astype('float32') * (1. / 255) # convert into [0.0; 1.0]
+        # crop top/bottom Atari specific borders
+        if self.env.spec.id == 'SpaceInvaders-v0':
+            # crop only bottom in SpaceInvaders, due to flying object at the top of the screen
+            luminance = luminance[:-15, :]
+        else:
+            luminance = luminance[36:-15, :]
+        # convert into [0.0; 1.0]
+        s = imresize(luminance, (self.W, self.H)).astype('float32') * (1. / 255)
         s = s.reshape(1, s.shape[0], s.shape[1], 1)
         if new_game or self.stacked_s is None:
             self.stacked_s = np.repeat(s, self.memlen, axis=3)
