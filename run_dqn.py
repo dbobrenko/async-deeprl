@@ -37,11 +37,11 @@ tf.app.flags.DEFINE_integer("height", 84, "Screen image height")
 # Logging
 tf.app.flags.DEFINE_integer("test_iter", 3, "Number of test iterations. Used for logging.")
 tf.app.flags.DEFINE_string("logdir", 'logs/', "Path to the directory used for checkpoints and loggings")
-tf.app.flags.DEFINE_integer("log_interval", 40000, "Log and checkpoint every X frame")
+tf.app.flags.DEFINE_integer("log_interval", 80000, "Log and checkpoint every X frame")
 # Evaluation
 tf.app.flags.DEFINE_boolean("eval", False, "Disables training, evaluates agent's performance")
 tf.app.flags.DEFINE_string("evaldir", 'eval/', "Path to the evaluation logging")
-tf.app.flags.DEFINE_integer("eval_iter", 20, "Number of evaluation episodes")
+tf.app.flags.DEFINE_integer("eval_iter", 5, "Number of evaluation episodes")
 # Optimizer
 tf.app.flags.DEFINE_float("lr", 1e-4, "Starting learning rate")
 FLAGS = tf.app.flags.FLAGS
@@ -53,12 +53,19 @@ training_finished = False
 
 
 def update_epsilon(frames, eps_steps, eps_min):
-    """Anneals epsilon based on current frame"""
+    """Anneals epsilon based on current frame
+    :param frames: current frame number
+    :param eps_steps: total number of epsilon annealing steps
+    :param eps_min: minimum allowed epsilon
+    :type frames: float
+    :type eps_steps: int
+    :type eps_min: float"""
     eps = FLAGS.eps_start - (frames / eps_steps) * (FLAGS.eps_start - eps_min)
     return eps if eps > eps_min else eps_min
 
 
 def evaluate():
+    """Evaluated current agent, and records a video with it's performance"""
     envwrap = GymWrapperFactory.make(FLAGS.env,
                                      actrep=FLAGS.action_repeat,
                                      memlen=FLAGS.memory_len,
@@ -99,6 +106,13 @@ def evaluate():
 
 
 def test(agent, env, episodes):
+    """Tests agent's peformance on given number of games
+    :param agent: agent to test
+    :param env: environment
+    :param episodes: number of testing episodes
+    :type agent: agent.QlearningAgent
+    :type env: environment.GymWrapper
+    :type episodes: int"""
     ep_rewards = []
     ep_q = []
     for _ in range(episodes):
@@ -117,12 +131,18 @@ def test(agent, env, episodes):
 def train_async_dqn(agent, env, sess, agent_summary, saver, thread_idx=0):
     """Starts Asynchronous one/n-step Q-Learning.
     Can be used as a worker for threading.Thread
-    :agent: agent.GymWrapper object or any other derived object
-    :env: environment.GymEnvironment object or any derived wrapper
-    :sess: tensorflow.Session
-    :agent_summary: agent.AgentSummary object
-    :saver: tensorflow.train.Saver object
-    :thread_idx: thread index (thread with index=0 used for target network update and logging)"""
+    :param agent: learning (asynchronous) agent
+    :param env: environment
+    :param sess: tensorflow session
+    :param agent_summary: object used for summary tensorboard logging
+    :param saver: tensorflow session saver
+    :param thread_idx: thread index. Thread with index=0 used for target network update and logging
+    :type agent: agent.QlearningAgent
+    :type env: environment.GymWrapper
+    :type sess: tensorflow.Session
+    :type agent_summary: agent.AgentSummary
+    :type saver: tensorflow.train.Saver
+    :type thread_idx: int"""
     global global_epsilons
     eps_min = random.choice(EPS_MIN_SAMPLES)
     epsilon = update_epsilon(agent.frame, FLAGS.eps_steps, eps_min)
@@ -188,7 +208,8 @@ def train_async_dqn(agent, env, sess, agent_summary, saver, thread_idx=0):
 
 
 def run(worker):
-    """Launches worker asynchronously in 'FLAGS.threads' threads"""
+    """Launches worker asynchronously in 'FLAGS.threads' threads
+    :param worker: worker function"""
     print('Starting. Threads:', FLAGS.threads)
     processes = []
     envs = []
@@ -230,9 +251,11 @@ def run(worker):
         for p in processes:
             p.join()
 
-
-if __name__ == '__main__':
+def main():
     if FLAGS.eval:
         evaluate()
     else:
         run(train_async_dqn)
+
+if __name__ == '__main__':
+    main()

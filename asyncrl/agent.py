@@ -11,16 +11,20 @@ from keras.models import Model
 class QlearningAgent:
     def __init__(self, session, lr, action_size, h, w, channels):
         """Creates Q-Learning agent
-        :session: tensoflow.Session()
-        :lr: learning rate
-        :action_size: size of action space
-        :h: input image height
-        :w: input image width
-        :channels: number of image channels"""
+        :param lr: learning rate
+        :param action_size: length of action space
+        :param h: input image height
+        :param w: input image width
+        :param channels: number of image channels
+        :type session: tensoflow.Session()
+        :type lr: float
+        :type action_size: int
+        :type h: int
+        :type w: int
+        :type channels: int"""
         self.lr_initial = lr
         self.action_size = action_size
         self.global_step = tf.Variable(0, name='frame', trainable=False)
-        self.learning_rate = tf.Variable(lr, name='lr', trainable=False)
         self.frame_inc_op = self.global_step.assign_add(1, use_locking=True)
         K.set_session(session)
         self.sess = session
@@ -34,20 +38,20 @@ class QlearningAgent:
             q_value = tf.reduce_sum(tf.mul(self.q_values, action_onehot), reduction_indices=1)
             self.loss = tf.reduce_mean(tf.square(self.reward - q_value))
             opt = tf.train.AdamOptimizer(lr)
-            gradvals = opt.compute_gradients(self.loss, model_weights)
-            gradvals_clip = []
-            for grad, var in gradvals:
-                grad = tf.clip_by_norm(grad, 40.)
-                gradvals_clip.append((grad, var))
-            self.train_op = opt.apply_gradients(gradvals_clip)
+            grads = tf.gradients(self.loss, model_weights)
+            grads, _ = tf.clip_by_global_norm(grads, 40.) # apply grad norm clip
+            grads_vars = list(zip(grads, model_weights))
+            self.train_op = opt.apply_gradients(grads_vars)
         with tf.variable_scope('target_network'):
             target_m, self.target_state, self.target_q_values = self._build_model(h, w, channels)
             target_w = target_m.trainable_weights
         with tf.variable_scope('target_update'):
-            self.target_update = [target_w[i].assign(model_weights[i]) for i in range(len(target_w))]
+            self.target_update = [target_w[i].assign(model_weights[i])
+                                  for i in range(len(target_w))]
     @property
     def frame(self):
-        """:rtype: global frame"""
+        """:return: global frame
+           :rtype: float"""
         return self.global_step.eval(session=self.sess)
 
     def update_target(self):
@@ -55,17 +59,29 @@ class QlearningAgent:
         self.sess.run(self.target_update)
 
     def predict_rewards(self, state):
-        """ Predicts epsilon greedy rewards per action for given state.
-        :state : array with shape=[batch_size, num_channels, width, height]
-        :rtype : rewards for each action (e.g [1.2, 5.0, 0.4])"""
+        """Predicts reward per action for given state.
+        :param state: array with shape=[batch_size, num_channels, width, height]
+        :type state: numpy.array
+        :return: rewards for each action (e.g [1.2, 5.0, 0.4])
+        :rtype: list"""
         return self.sess.run(self.q_values, {self.state: state}).flatten()
 
     def predict_target(self, state):
-        """Predicts maximum action's reward for given state with target network"""
+        """Predicts maximum action's reward for given state with target network
+        :param state: array with shape=[batch_size, num_channels, width, height]
+        :type state: numpy.array
+        :return: maximum expected reward
+        :rtype: float"""
         return np.max(self.sess.run(self.target_q_values, {self.target_state: state}).flatten())
 
     def train(self, states, actions, rewards):
-        """Trains online network"""
+        """Trains online network on given states and rewards batch
+        :param states: batch with screens with shape=[N, H, W, C]
+        :param actions: batch with actions indecies, e.g. [1, 4, 0, 2]
+        :param rewards: batch with recieved rewards from given actions, e.g. [0.43, 0.5, -0.1, 1.0]
+        :type states: numpy.array
+        :type actions: list
+        :type rewards: list"""
         self.sess.run(self.train_op, feed_dict={
             self.state: states,
             self.action: actions,
@@ -73,9 +89,11 @@ class QlearningAgent:
         })
 
     def frame_increment(self):
+        """Increments global frame counter"""
         self.frame_inc_op.eval(session=self.sess)
 
     def _build_model(self, h, w, channels, fc3_size=256):
+        """Builds DQN model (Mnih et al., 2013)"""
         state = tf.placeholder('float32', shape=(None, h, w, channels), name='state')
         inputs = Input(shape=(h, w, channels,))
         model = Convolution2D(nb_filter=16, nb_row=8, nb_col=8, subsample=(4,4), activation='relu', 
@@ -112,9 +130,10 @@ class AgentSummary:
             self.summary_op = tf.merge_summary(list(self.summary_ops.values()))
 
     def write_summary(self, tags):
-        """:tags : summary dictionary with with keys:
-                   'episode_avg_reward', 'avg_q_value', 'epsilon',
-                   'learning_rate', 'total_frame_step'"""
+        """Writes summary to the tensorboard
+        :param tags : summary dictionary with with keys:
+                      'episode_avg_reward', 'avg_q_value', 'epsilon', 'total_frame_step'
+        :type tags: dict"""
         tags['fps'] = (self.agent.frame - self.last_write_frames) / (time.time() - self.last_write_time)
         self.last_write_time = time.time()
         self.last_write_frames = self.agent.frame

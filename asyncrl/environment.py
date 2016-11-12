@@ -3,6 +3,7 @@ import gym
 import numpy as np
 import random
 
+# Predefined custom action space in given games
 __custom_actions__ = {'Breakout-v0': [1, 4, 5], # NoOp,, Right, Left
                       'Pong-v0': [1, 2, 3], # NoOp,, Right, Left
                       'SpaceInvaders-v0': [1, 2, 3], # NoOp,, Right, Left
@@ -44,17 +45,21 @@ class GymWrapper:
 
     def set_custom_actions(self, action_space):
         """Sets custom action space for current environment.
-        :action_space: list of allowed actions (e.g. [1, 2, 3])"""
+        :param action_space: list of allowed actions (e.g. [1, 2, 3])
+        :type action_space: list"""
         self.action_space = action_space
         self.action_size = len(self.action_space)
 
     def preprocess(self, screen, new_game=False):
         """Converts to grayscale, resizes and stacks input screen.
-        :screen: numpy array image in [0; 255] range with shape=[H, W, C]
-        :new_game: if True - repeats passed screen `memlen` times
+        :param screen: array image in [0; 255] range with shape=[H, W, C]
+        :param new_game: if True - repeats passed screen `memlen` times
                    otherwise - stacks with previous screens"
-        :rtype: image in [0.0; 1.0] stacked with last `memlen-1` screens; 
-                shape=[1, h, w, memlen]"""
+        :type screen: numpy.array
+        :type new_game: bool
+        :return: image in [0.0; 1.0] stacked with last `memlen-1` screens; 
+                shape=[1, h, w, memlen]
+        :rtype: numpy.array"""
         gray = screen.astype('float32').mean(2) # no need in true grayscale, just take mean
         # convert values into [0.0; 1.0] range
         s = imresize(gray, (self.W, self.H)).astype('float32') * (1. / 255)
@@ -67,12 +72,14 @@ class GymWrapper:
 
     def reset(self):
         """Resets current game.
-        :rtype: preprocessed first screen of the next game"""
+        :return: preprocessed first screen of the next game
+        :rtype: numpy.array"""
         return self.preprocess(self.env.reset(), new_game=True)
 
     def reset_random(self):
         """Resets current game and skips `self.random_start` amount of frames.
-        :rtype: preprocessed first screen of the next game"""
+        :return: preprocessed first screen of the next game
+        :rtype: numpy.array"""
         s = self.env.reset()
         skip = random.randrange(self.random_start)
         for i in range(skip):
@@ -85,11 +92,13 @@ class GymWrapper:
     def step(self, action_index, test=False):
         """Executes action and repeat it on the next X frames
         :param action_index: action index (0-based)
-        :rtype 4 elements tuple:
+        :type action_index: int
+        :return 4 elements tuple:
                preprocessed and stacked screen,
                accumulated reward over skipped frames
                is terminal,
-               info"""
+               info
+        :rtype: tuple"""
         action = self.action_space[action_index]
         accum_reward = 0
         for _ in range(self.actrep):
@@ -100,6 +109,7 @@ class GymWrapper:
         return self.preprocess(s), accum_reward, term, info
 
     def render(self):
+        """Renders current frame"""
         self.env.render()
 
 class GymALE(GymWrapper):
