@@ -46,12 +46,15 @@ Tested OpenAI Gym environments:
 To change amount of spawned threads, use `--threads` (by default = 8) flag; to use GPU instead of cpu, pass `--gpu` flag.
 All available flags can be checked by: `python run_dqn.py --help`
 
+To read TensorBoard logs, use:
+`tensorboard --logdir=path/to/logdir`
+
 ## Pretrained models
 **To use pretrained agent**, or change log folder, just use `--logdir` flag:
 ```
 python run_dqn.py --logdir path/to/checkpoint/folder/
 ```
-*TODO: Link to pretrained models*.
+Model trained on SpaceInvaders, over 80 millions of frames, can be downloaded from [here](https://doc-14-8c-docs.googleusercontent.com/docs/securesc/ha0ro937gcuc7l7deffksulhg5h7mbp1/jkj8v0qrd2m2qog0s6h3ge18jnh48kcr/1481392800000/17750014777523990784/*/0By6rAKVSThTxRGYwRWlfM09MZTg?e=download).
 
 ## Evaluation
 To evaluate pretrained agent, use:

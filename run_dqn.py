@@ -73,11 +73,11 @@ def evaluate():
                                      h=FLAGS.height)
     with tf.Session() as sess:
         agent = QlearningAgent(session=sess,
-                               lr=FLAGS.lr,
                                action_size=envwrap.action_size,
                                h=FLAGS.height,
                                w=FLAGS.width,
-                               channels=FLAGS.memory_len)
+                               channels=FLAGS.memory_len,
+                               opt=tf.train.AdamOptimizer(FLAGS.lr))
         sess.run(tf.initialize_all_variables())
         if not os.path.exists(FLAGS.logdir):
             print('ERROR! No', FLAGS.logdir, 'folder found!')
@@ -223,11 +223,11 @@ def run(worker):
 
     with tf.Session() as sess:
         agent = QlearningAgent(session=sess,
-                               lr=FLAGS.lr,
                                action_size=envs[0].action_size,
                                h=FLAGS.height,
                                w=FLAGS.width,
-                               channels=FLAGS.memory_len)
+                               channels=FLAGS.memory_len,
+                               opt=tf.train.AdamOptimizer(FLAGS.lr))
         saver = tf.train.Saver(tf.all_variables(), max_to_keep=2)
         sess.run(tf.initialize_all_variables())
         if not os.path.exists(FLAGS.logdir):
