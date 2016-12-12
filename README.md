@@ -23,7 +23,7 @@ Benchmarks for current implementation of Asynchronous one-step Q-Learning:
    pip install scipy
    ```
 3. [TensorFlow](https://www.tensorflow.org/);
-4. [OpenAI Gym](https://gym.openai.com/).`
+4. [OpenAI Gym](https://gym.openai.com/).
 
 *Keras* and *numpy* already comes with listed packages.
 
