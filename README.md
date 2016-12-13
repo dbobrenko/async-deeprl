@@ -54,7 +54,7 @@ To read TensorBoard logs, use:
 ```
 python run_dqn.py --logdir path/to/checkpoint/folder/
 ```
-Model trained on SpaceInvaders, over 80 millions of frames, can be downloaded from [here](https://doc-14-8c-docs.googleusercontent.com/docs/securesc/ha0ro937gcuc7l7deffksulhg5h7mbp1/jkj8v0qrd2m2qog0s6h3ge18jnh48kcr/1481392800000/17750014777523990784/*/0By6rAKVSThTxRGYwRWlfM09MZTg?e=download).
+**Model, trained on SpaceInvaders,** over 80 millions of frames, can be downloaded from [here](https://drive.google.com/file/d/0By6rAKVSThTxRGYwRWlfM09MZTg/view).
 
 ## Evaluation
 To evaluate pretrained agent, use:
