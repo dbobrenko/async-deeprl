@@ -1,18 +1,17 @@
-## Asynchronous Deep Reinforcement Learning
+# Asynchronous Deep Reinforcement Learning
+**[Asynchronous one-step Q-Learning intuition, implementation description and training results.](https://dbobrenko.github.io/2016/11/03/async-deeprl.html)**
+
 An attempt to implement asynchronous one-step Q-Learning from Google DeepMind's paper ["Asynchronous Methods for Deep Reinforcement Learning", Mnih et al., 2016.](https://arxiv.org/abs/1602.01783)
 
-**Intuition and detailed implementation description:**
-
-https://dbobrenko.github.io/2016/11/03/async-deeprl.html
 
 Benchmarks for current implementation of Asynchronous one-step Q-Learning:
 
-| **Device**                                          | **Input shape** | **FPS** (skipped frames does not count)   |
+| **Device**                                          | **Input shape** | **FPS** (skipped frames was not counted)  |
 |:----------------------------------------------------|:---------------:|:-----------------------------------------:|
 | GPU **GTX 980 Ti**                                  | 84x84x4         | **530**                                   |
 | CPU **Core i7-3770 @ 3.40GHz (4 cores, 8 threads)** | 84x84x4         | **300**                                   |
 
-## Requirements
+# Requirements
 1. Linux based OS or Mac OS X;
 2. [Anaconda package](https://www.continuum.io/downloads) (recommended);
 
@@ -27,7 +26,7 @@ Benchmarks for current implementation of Asynchronous one-step Q-Learning:
 
 *Keras* and *numpy* already comes with listed packages.
 
-## Usage
+# Usage
 **To train** your own model on 'Atari 2600 SpaceInvaders', simply run:
 ```
 python run_dqn.py
@@ -49,14 +48,14 @@ All available flags can be checked by: `python run_dqn.py --help`
 To read TensorBoard logs, use:
 `tensorboard --logdir=path/to/logdir`
 
-## Pretrained models
+# Pretrained models
 **To use pretrained agent**, or change log folder, just use `--logdir` flag:
 ```
 python run_dqn.py --logdir path/to/checkpoint/folder/
 ```
 **Model, trained on SpaceInvaders,** over 80 millions of frames, can be downloaded from [here](https://drive.google.com/file/d/0By6rAKVSThTxRGYwRWlfM09MZTg/view).
 
-## Evaluation
+# Evaluation
 To evaluate pretrained agent, use:
 ```
 python run_dqn.py --eval --eval_dir folder/for/evaluation/write --logdir path/to/checkpoint/folder/
