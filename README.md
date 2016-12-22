@@ -1,5 +1,5 @@
 # Asynchronous Deep Reinforcement Learning
-**[Asynchronous one-step Q-Learning intuition, implementation description and training results.](https://dbobrenko.github.io/2016/11/03/async-deeprl.html)**
+**[> Intuition, implementation description and training results can be found here. <](https://dbobrenko.github.io/2016/11/03/async-deeprl.html)**
 
 An attempt to implement asynchronous one-step Q-Learning from Google DeepMind's paper ["Asynchronous Methods for Deep Reinforcement Learning", Mnih et al., 2016.](https://arxiv.org/abs/1602.01783)
 
@@ -48,15 +48,17 @@ All available flags can be checked by: `python run_dqn.py --help`
 To read TensorBoard logs, use:
 `tensorboard --logdir=path/to/logdir`
 
-# Pretrained models
+# Trained models
+
 **To use pretrained agent**, or change log folder, just use `--logdir` flag:
 ```
 python run_dqn.py --logdir path/to/checkpoint/folder/
 ```
+
 **Model, trained on SpaceInvaders,** over 80 millions of frames, can be downloaded from [here](https://drive.google.com/file/d/0By6rAKVSThTxRGYwRWlfM09MZTg/view).
 
 # Evaluation
-To evaluate pretrained agent, use:
+To evaluate trained agent, use:
 ```
 python run_dqn.py --eval --eval_dir folder/for/evaluation/write --logdir path/to/checkpoint/folder/
 ```
