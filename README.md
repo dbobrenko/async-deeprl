@@ -41,8 +41,10 @@ Tested OpenAI Gym environments:
 * SpaceInvaders-v0
 * Pong-v0
 
-**To change amount of spawned threads**, use `--threads` flag (by default = 8).
-**To use GPU** instead of cpu, pass `--gpu` flag.
+**To change amount of spawned threads**, use `--threads` flag (by default = 8).__
+
+**To use GPU** instead of cpu, pass `--gpu` flag.__
+
 All available flags can be checked by: `python run_dqn.py --help`
 
 To read TensorBoard logs, use:
