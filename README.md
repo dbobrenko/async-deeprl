@@ -1,5 +1,5 @@
 # Asynchronous Deep Reinforcement Learning
-**[> Intuition, implementation description and training results can be found here. <](https://dbobrenko.github.io/2016/11/03/async-deeprl.html)**
+**[> Intuition, implementation description and training results can be found here <](https://dbobrenko.github.io/2016/11/03/async-deeprl.html)**
 
 An attempt to implement asynchronous one-step Q-Learning from Google DeepMind's paper ["Asynchronous Methods for Deep Reinforcement Learning", Mnih et al., 2016.](https://arxiv.org/abs/1602.01783)
 
@@ -24,8 +24,6 @@ Benchmarks for current implementation of Asynchronous one-step Q-Learning:
 3. [TensorFlow](https://www.tensorflow.org/);
 4. [OpenAI Gym](https://gym.openai.com/).
 
-*Keras* and *numpy* already comes with listed packages.
-
 # Usage
 **To train** your own model on 'Atari 2600 SpaceInvaders', simply run:
 ```
@@ -36,13 +34,15 @@ To specify another environment, use `--env` flag, e.g:
 ```
 python run_dqn.py --env Pong-v0
 ```
+
 All available environments you can check [here](https://gym.openai.com/envs). 
 Note, that current implementation supports environments only with raw pixels observations.
 Tested OpenAI Gym environments:
 * SpaceInvaders-v0
 * Pong-v0
 
-To change amount of spawned threads, use `--threads` (by default = 8) flag; to use GPU instead of cpu, pass `--gpu` flag.
+**To change amount of spawned threads**, use `--threads` flag (by default = 8).
+**To use GPU** instead of cpu, pass `--gpu` flag.
 All available flags can be checked by: `python run_dqn.py --help`
 
 To read TensorBoard logs, use:
@@ -50,7 +50,7 @@ To read TensorBoard logs, use:
 
 # Trained models
 
-**To use pretrained agent**, or change log folder, just use `--logdir` flag:
+To use pretrained agent, or change log folder, just use `--logdir` flag:
 ```
 python run_dqn.py --logdir path/to/checkpoint/folder/
 ```
