@@ -23,6 +23,7 @@ Benchmarks for current implementation of Asynchronous one-step Q-Learning:
    pip install six
    pip install future
    pip install scipy
+   pip install pillow
    ```
 3. [TensorFlow](https://www.tensorflow.org/);
 4. [OpenAI Gym](https://gym.openai.com/).
