@@ -2,29 +2,33 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from scipy.misc import imresize
-import gym
-import numpy as np
 import random
 
+import gym
+import numpy as np
+from scipy.misc import imresize
+
 # Predefined custom action space in given games
-__custom_actions__ = {'Breakout-v0': [1, 4, 5], # NoOp,, Right, Left
-                      'Pong-v0': [1, 2, 3], # NoOp,, Right, Left
-                      'SpaceInvaders-v0': [1, 2, 3], # NoOp,, Right, Left
-                     }
+__custom_actions__ = {'Breakout-v0': [1, 4, 5],  # NoOp,, Right, Left
+                      'Pong-v0': [1, 2, 3],  # NoOp,, Right, Left
+                      'SpaceInvaders-v0': [1, 2, 3],  # NoOp,, Right, Left
+                      }
+
 
 class GymWrapperFactory:
     @staticmethod
     def make(name, actrep=4, memlen=4, w=84, h=84, random_start=30):
         env = gym.make(name)
-        if hasattr(env, 'ale'): # Arcade Learning Environment
+        if hasattr(env, 'ale'):  # Arcade Learning Environment
             return GymALE(env, actrep=actrep, memlen=memlen, w=w, h=h, random_start=random_start)
-        else: # Basic Gym environment wrapper
+        else:  # Basic Gym environment wrapper
             return GymWrapper(env, actrep=actrep, memlen=memlen,
                               w=w, h=h, random_start=random_start)
 
+
 class GymWrapper:
     """A small wrapper around OpenAI Gym ALE"""
+
     def __init__(self, env, actrep=4, memlen=4, w=84, h=84, random_start=30):
         print('Creating wrapper around Gym Environment')
         self.env = env
@@ -64,7 +68,7 @@ class GymWrapper:
         :return: image in [0.0; 1.0] stacked with last `memlen-1` screens; 
                 shape=[1, h, w, memlen]
         :rtype: numpy.array"""
-        gray = screen.astype('float32').mean(2) # no need in true grayscale, just take mean
+        gray = screen.astype('float32').mean(2)  # no need in true grayscale, just take mean
         # convert values into [0.0; 1.0] range
         s = imresize(gray, (self.W, self.H)).astype('float32') * (1. / 255)
         s = s.reshape(1, s.shape[0], s.shape[1], 1)
@@ -116,6 +120,7 @@ class GymWrapper:
         """Renders current frame"""
         self.env.render()
 
+
 class GymALE(GymWrapper):
     def __init__(self, env, actrep=4, memlen=4, w=84, h=84, random_start=30):
         GymWrapper.__init__(self, env=env, actrep=actrep, memlen=memlen, w=w, h=h,
@@ -124,7 +129,7 @@ class GymALE(GymWrapper):
         self.has_lives = hasattr(self.env, 'ale') and hasattr(self.env.ale, 'lives')
 
     def preprocess(self, screen, new_game=False):
-        luminance = screen.astype('float32').mean(2) # no need in true grayscale, just take mean
+        luminance = screen.astype('float32').mean(2)  # no need in true grayscale, just take mean
         # crop top/bottom Atari specific borders
         if self.env.spec.id == 'SpaceInvaders-v0':
             # crop only bottom in SpaceInvaders, due to flying object at the top of the screen

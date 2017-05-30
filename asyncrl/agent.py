@@ -2,14 +2,17 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import tensorflow as tf
-import numpy as np
-import time
 import os
+import time
+
+import numpy as np
+import tensorflow as tf
+
 os.environ["KERAS_BACKEND"] = "tensorflow"
 from keras import backend as K
 from keras.layers import Convolution2D, Flatten, Dense, Input
 from keras.models import Model
+
 
 class QlearningAgent:
     def __init__(self, session, action_size, h, w, channels, opt=tf.train.AdamOptimizer(1e-4)):
@@ -56,6 +59,7 @@ class QlearningAgent:
         with tf.variable_scope('target_update'):
             self.target_update = [target_w[i].assign(self.weights[i])
                                   for i in range(len(target_w))]
+
     @property
     def frame(self):
         """:return: global frame
@@ -85,13 +89,13 @@ class QlearningAgent:
     def train(self, states, actions, rewards):
         """Trains online network on given states and rewards batch
         :param states: batch with screens with shape=[N, H, W, C]
-        :param actions: batch with actions indecies, e.g. [1, 4, 0, 2]
-        :param rewards: batch with recieved rewards from given actions, e.g. [0.43, 0.5, -0.1, 1.0]
+        :param actions: batch with actions indices, e.g. [1, 4, 0, 2]
+        :param rewards: batch with received rewards from given actions, e.g. [0.43, 0.5, -0.1, 1.0]
         :type states: numpy.array
         :type actions: list
         :type rewards: list"""
         self.sess.run(self.train_op, feed_dict={
-            self.state:  states,
+            self.state: states,
             self.action: actions,
             self.reward: rewards
         })
@@ -108,9 +112,9 @@ class QlearningAgent:
         :param fc3_size: 3rd fully connected layer size (common: 256, 512)"""
         state = tf.placeholder('float32', shape=(None, h, w, channels), name='state')
         inputs = Input(shape=(h, w, channels,))
-        model = Convolution2D(nb_filter=16, nb_row=8, nb_col=8, subsample=(4,4), activation='relu',
+        model = Convolution2D(nb_filter=16, nb_row=8, nb_col=8, subsample=(4, 4), activation='relu',
                               border_mode='same', dim_ordering='tf')(inputs)
-        model = Convolution2D(nb_filter=32, nb_row=4, nb_col=4, subsample=(2,2), activation='relu',
+        model = Convolution2D(nb_filter=32, nb_row=4, nb_col=4, subsample=(2, 2), activation='relu',
                               border_mode='same', dim_ordering='tf')(model)
         model = Flatten()(model)
         model = Dense(output_dim=fc3_size, activation='relu')(model)
@@ -119,8 +123,10 @@ class QlearningAgent:
         qvalues = model(state)
         return model, state, qvalues
 
+
 class AgentSummary:
     """Helper wrapper for summary tensorboard logging"""
+
     def __init__(self, logdir, agent, env_name):
         """ :param logdir: path to the log directory
             :param agent: agent class-wrapper
@@ -156,6 +162,6 @@ class AgentSummary:
         self.last_time = time.time()
         self.last_frames = self.agent.frame
         self.agent.sess.run(self.update_ops, {self.summary_ph[k]: v for k, v in tags.items()})
-        summary = self.agent.sess.run(self.summary_op, 
+        summary = self.agent.sess.run(self.summary_op,
                                       {self.summary_vars[k]: v for k, v in tags.items()})
         self.writer.add_summary(summary, global_step=self.agent.frame)

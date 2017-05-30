@@ -1,17 +1,19 @@
 # Python 2 and 3 compatibility
-from __future__ import print_function
 from __future__ import division
+from __future__ import print_function
+
+import os
+import random
+import threading as th
+import time
+from datetime import datetime
+
+import numpy as np
+import tensorflow as tf
 from six.moves import range
 
-import tensorflow as tf
-import numpy as np
-import threading as th
-import random
-from datetime import datetime
-from asyncrl.environment import GymWrapperFactory
 from asyncrl.agent import QlearningAgent, AgentSummary
-import time
-import os
+from asyncrl.environment import GymWrapperFactory
 
 random.seed(201)  # To reproduce minimum epsilon sampling
 # Distribution of epsilon exploration chances (0.1 = 0.4; 0.01 = 0.3; 05 = 0.3)
@@ -106,7 +108,7 @@ def evaluate():
 
 
 def test(agent, env, episodes):
-    """Tests agent's peformance on given number of games
+    """Tests agent's performance on given number of games
     :param agent: agent to test
     :param env: environment
     :param episodes: number of testing episodes
@@ -251,11 +253,13 @@ def run(worker):
         for p in processes:
             p.join()
 
+
 def main():
     if FLAGS.eval:
         evaluate()
     else:
         run(train_async_dqn)
+
 
 if __name__ == '__main__':
     main()
