@@ -41,7 +41,7 @@ class QlearningAgent:
             # Zero all actions, except one that was performed
             action_onehot = tf.one_hot(self.action, self.action_size, 1.0, 0.0)
             # Predict expected future reward for performed action
-            q_value = tf.reduce_sum(tf.mul(self.q_values, action_onehot), reduction_indices=1)
+            q_value = tf.reduce_sum(tf.multiply(self.q_values, action_onehot), reduction_indices=1)
             # Define squared mean loss function: (y - y_)^2
             self.loss = tf.reduce_mean(tf.square(self.reward - q_value))
             # Compute gradients w.r.t. weights
@@ -108,7 +108,7 @@ class QlearningAgent:
         :param fc3_size: 3rd fully connected layer size (common: 256, 512)"""
         state = tf.placeholder('float32', shape=(None, h, w, channels), name='state')
         inputs = Input(shape=(h, w, channels,))
-        model = Convolution2D(nb_filter=16, nb_row=8, nb_col=8, subsample=(4,4), activation='relu', 
+        model = Convolution2D(nb_filter=16, nb_row=8, nb_col=8, subsample=(4,4), activation='relu',
                               border_mode='same', dim_ordering='tf')(inputs)
         model = Convolution2D(nb_filter=32, nb_row=4, nb_col=4, subsample=(2,2), activation='relu',
                               border_mode='same', dim_ordering='tf')(model)
@@ -131,18 +131,18 @@ class AgentSummary:
             self.last_frames = self.agent.frame
             scalar_tags = ['fps', 'episode_avg_reward', 'avg_q_value',
                            'epsilon', 'total_frame_step']
-            self.writer = tf.train.SummaryWriter(logdir, self.agent.sess.graph)
+            self.writer = tf.summary.FileWriter(logdir, self.agent.sess.graph)
             self.summary_vars = {}
             self.summary_ph = {}
             self.summary_ops = {}
             for k in scalar_tags:
                 self.summary_vars[k] = tf.Variable(0.)
                 self.summary_ph[k] = tf.placeholder('float32', name=k)
-                self.summary_ops[k] = tf.scalar_summary("%s/%s" % (env_name, k), self.summary_vars[k])
+                self.summary_ops[k] = tf.summary.scalar("%s/%s" % (env_name, k), self.summary_vars[k])
             self.update_ops = []
             for k in self.summary_vars:
                 self.update_ops.append(self.summary_vars[k].assign(self.summary_ph[k]))
-            self.summary_op = tf.merge_summary(list(self.summary_ops.values()))
+            self.summary_op = tf.summary.merge(list(self.summary_ops.values()))
 
     def write_summary(self, tags):
         """Writes summary to TensorBoard.
