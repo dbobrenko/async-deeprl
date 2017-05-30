@@ -10,7 +10,7 @@ import tensorflow as tf
 
 os.environ["KERAS_BACKEND"] = "tensorflow"
 from keras import backend as K
-from keras.layers import Convolution2D, Flatten, Dense, Input
+from keras.layers import Flatten, Dense, Input, Conv2D
 from keras.models import Model
 
 
@@ -112,14 +112,14 @@ class QlearningAgent:
         :param fc3_size: 3rd fully connected layer size (common: 256, 512)"""
         state = tf.placeholder('float32', shape=(None, h, w, channels), name='state')
         inputs = Input(shape=(h, w, channels,))
-        model = Convolution2D(nb_filter=16, nb_row=8, nb_col=8, subsample=(4, 4), activation='relu',
-                              border_mode='same', dim_ordering='tf')(inputs)
-        model = Convolution2D(nb_filter=32, nb_row=4, nb_col=4, subsample=(2, 2), activation='relu',
-                              border_mode='same', dim_ordering='tf')(model)
+        model = Conv2D(activation="relu", filters=16, kernel_size=(8, 8), padding="same",
+                       strides=(4, 4), data_format="channels_last")(inputs)
+        model = Conv2D(kernel_size=(4, 4), data_format="channels_last", strides=(2, 2),
+                       filters=32, activation="relu", padding="same")(model)
         model = Flatten()(model)
-        model = Dense(output_dim=fc3_size, activation='relu')(model)
-        out = Dense(output_dim=self.action_size, activation='linear')(model)
-        model = Model(input=inputs, output=out)
+        model = Dense(units=fc3_size, activation='relu')(model)
+        out = Dense(units=self.action_size, activation='linear')(model)
+        model = Model(inputs=inputs, outputs=out)
         qvalues = model(state)
         return model, state, qvalues
 

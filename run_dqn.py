@@ -230,8 +230,8 @@ def run(worker):
                                w=FLAGS.width,
                                channels=FLAGS.memory_len,
                                opt=tf.train.AdamOptimizer(FLAGS.lr))
-        saver = tf.train.Saver(tf.all_variables(), max_to_keep=2)
-        sess.run(tf.initialize_all_variables())
+        saver = tf.train.Saver(tf.global_variables(), max_to_keep=2)
+        sess.run(tf.global_variables_initializer())
         if not os.path.exists(FLAGS.logdir):
             os.makedirs(FLAGS.logdir)
         ckpt = tf.train.latest_checkpoint(FLAGS.logdir)
