@@ -4,31 +4,24 @@ from __future__ import print_function
 
 import os
 import time
-
 import numpy as np
 import tensorflow as tf
-
-os.environ["KERAS_BACKEND"] = "tensorflow"
 from keras import backend as K
 from keras.layers import Flatten, Dense, Input, Conv2D
 from keras.models import Model
+
+os.environ["KERAS_BACKEND"] = "tensorflow"
 
 
 class QlearningAgent:
     def __init__(self, session, action_size, h, w, channels, opt=tf.train.AdamOptimizer(1e-4)):
         """Creates Q-Learning agent
-        :param session: active tensorflow session
-        :param action_size: length of action space
-        :param h: input image height
-        :param w: input image width
-        :param channels: number of image channels
-        :param opt: optimizer (by default: Adam optimizer)
-        :type session: tensoflow.Session()
-        :type action_size: int
-        :type h: int
-        :type w: int
-        :type channels: int
-        :type opt: tensorflow.train.Optimizer"""
+        :param session: tensorflow session
+        :param action_size: (int) length of action space
+        :param h: (int) input image height
+        :param w: (int) input image width
+        :param channels: (int) number of image channels
+        :param opt: tensorflow optimizer (by default: Adam optimizer)"""
         self.action_size = action_size
         self.opt = opt
         self.global_step = tf.Variable(0, name='frame', trainable=False)
@@ -62,26 +55,25 @@ class QlearningAgent:
 
     @property
     def frame(self):
-        """:return: global frame
-           :rtype: float"""
+        """:return: global frame"""
         return self.global_step.eval(session=self.sess)
 
     def update_target(self):
-        """Updates target network weights"""
+        """Synchronizes shared target with local weights"""
         self.sess.run(self.target_update)
 
     def predict_rewards(self, state):
         """Predicts reward per action for given state.
         :param state: array with shape=[batch_size, num_channels, width, height]
-        :type state: numpy.array
-        :return: rewards for each action (e.g [1.2, 5.0, 0.4])
+        :type state: nd.array
+        :return: rewards for each action (e.g. [1.2, 5.0, 0.4])
         :rtype: list"""
         return self.sess.run(self.q_values, {self.state: state}).flatten()
 
     def predict_target(self, state):
         """Predicts maximum action's reward for given state with target network
         :param state: array with shape=[batch_size, num_channels, width, height]
-        :type state: numpy.array
+        :type state: nd.array
         :return: maximum expected reward
         :rtype: float"""
         return np.max(self.sess.run(self.target_q_values, {self.target_state: state}).flatten())
@@ -90,8 +82,8 @@ class QlearningAgent:
         """Trains online network on given states and rewards batch
         :param states: batch with screens with shape=[N, H, W, C]
         :param actions: batch with actions indices, e.g. [1, 4, 0, 2]
-        :param rewards: batch with received rewards from given actions, e.g. [0.43, 0.5, -0.1, 1.0]
-        :type states: numpy.array
+        :param rewards: batch with received rewards from given actions (e.g. [0.43, 0.5, -0.1, 1.0])
+        :type states: nd.array
         :type actions: list
         :type rewards: list"""
         self.sess.run(self.train_op, feed_dict={
@@ -105,7 +97,7 @@ class QlearningAgent:
         self.frame_inc_op.eval(session=self.sess)
 
     def _build_model(self, h, w, channels, fc3_size=256):
-        """Builds DQN model (Mnih et al, 2015)
+        """Builds DQN model (Mnih et al., 2015)
         :param h: input layer height
         :param w: input layer width
         :param channels: input layer number of channels

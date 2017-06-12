@@ -1,4 +1,4 @@
-# Python 2 and 3 compatibility
+from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
@@ -8,20 +8,21 @@ import threading as th
 import time
 from datetime import datetime
 
+from six.moves import range  # pylint: disable=redefined-builtin
 import numpy as np
 import tensorflow as tf
-from six.moves import range
 
 from asyncrl.agent import QlearningAgent, AgentSummary
 from asyncrl.environment import GymWrapperFactory
 
-random.seed(201)  # To reproduce minimum epsilon sampling
+# To reproduce minimum epsilon sampling
+random.seed(201)
 # Distribution of epsilon exploration chances (0.1 = 0.4; 0.01 = 0.3; 05 = 0.3)
 EPS_MIN_SAMPLES = 4 * [0.1] + 3 * [0.01] + 3 * [0.5]
 
 # Configurations
 tf.app.flags.DEFINE_integer("threads", 8, "Number of threads to use")
-tf.app.flags.DEFINE_boolean("gpu", False, "Use CPU or GPU for training (default is CPU)")
+tf.app.flags.DEFINE_boolean("use_cpu", False, "Use CPU or GPU for training (by default is GPU)")
 # Training settings
 tf.app.flags.DEFINE_integer("total_frames", 40000000, "Total frames (across all threads)")
 tf.app.flags.DEFINE_integer("update_interval", 40000, "Update target network after X frames")
@@ -48,7 +49,7 @@ tf.app.flags.DEFINE_integer("eval_iter", 5, "Number of evaluation episodes")
 tf.app.flags.DEFINE_float("lr", 1e-4, "Starting learning rate")
 FLAGS = tf.app.flags.FLAGS
 # Hide all GPUs for current process if CPU was chosen
-if not FLAGS.gpu:
+if FLAGS.use_cpu:
     os.environ["CUDA_VISIBLE_DEVICES"] = ""
 global_epsilons = [0.] * FLAGS.threads
 training_finished = False
@@ -56,9 +57,9 @@ training_finished = False
 
 def update_epsilon(frames, eps_steps, eps_min):
     """Anneals epsilon based on current frame
-    :param frames: current frame number
-    :param eps_steps: total number of epsilon annealing steps
-    :param eps_min: minimum allowed epsilon
+    :param frames: (float) current frame number
+    :param eps_steps: (int) total number of epsilon annealing steps
+    :param eps_min: (float) minimum allowed epsilon
     :type frames: float
     :type eps_steps: int
     :type eps_min: float"""
@@ -111,10 +112,9 @@ def test(agent, env, episodes):
     """Tests agent's performance on given number of games
     :param agent: agent to test
     :param env: environment
-    :param episodes: number of testing episodes
+    :param episodes: (int) number of testing episodes
     :type agent: agent.QlearningAgent
-    :type env: environment.GymWrapper
-    :type episodes: int"""
+    :type env: environment.GymWrapper"""
     ep_rewards = []
     ep_q = []
     for _ in range(episodes):
@@ -138,13 +138,12 @@ def train_async_dqn(agent, env, sess, agent_summary, saver, thread_idx=0):
     :param sess: tensorflow session
     :param agent_summary: object used for summary tensorboard logging
     :param saver: tensorflow session saver
-    :param thread_idx: thread index. Thread with index=0 used for target network update and logging
+    :param thread_idx: (int) thread index. Thread with index=0 used for target network update and logging
     :type agent: agent.QlearningAgent
     :type env: environment.GymWrapper
     :type sess: tensorflow.Session
     :type agent_summary: agent.AgentSummary
-    :type saver: tensorflow.train.Saver
-    :type thread_idx: int"""
+    :type saver: tensorflow.train.Saver"""
     global global_epsilons
     eps_min = random.choice(EPS_MIN_SAMPLES)
     epsilon = update_epsilon(agent.frame, FLAGS.eps_steps, eps_min)
@@ -212,7 +211,7 @@ def train_async_dqn(agent, env, sess, agent_summary, saver, thread_idx=0):
 def run(worker):
     """Launches worker asynchronously in 'FLAGS.threads' threads
     :param worker: worker function"""
-    print('Starting. Threads:', FLAGS.threads)
+    print('Starting %s threads.' % FLAGS.threads)
     processes = []
     envs = []
     for _ in range(FLAGS.threads):

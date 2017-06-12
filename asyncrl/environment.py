@@ -3,15 +3,15 @@ from __future__ import division
 from __future__ import print_function
 
 import random
-
-import gym
 import numpy as np
 from scipy.misc import imresize
+import gym
+from gym import spaces
 
 # Predefined custom action space in given games
-__custom_actions__ = {'Breakout-v0': [1, 4, 5],  # NoOp,, Right, Left
-                      'Pong-v0': [1, 2, 3],  # NoOp,, Right, Left
-                      'SpaceInvaders-v0': [1, 2, 3],  # NoOp,, Right, Left
+__custom_actions__ = {'Breakout-v0': [1, 4, 5],  # NoOp, Right, Left
+                      'Pong-v0': [1, 2, 3],  # NoOp, Right, Left
+                      'SpaceInvaders-v0': [1, 2, 3],  # NoOp, Right, Left
                       }
 
 
@@ -28,7 +28,6 @@ class GymWrapperFactory:
 
 class GymWrapper:
     """A small wrapper around OpenAI Gym ALE"""
-
     def __init__(self, env, actrep=4, memlen=4, w=84, h=84, random_start=30):
         print('Creating wrapper around Gym Environment')
         self.env = env
@@ -37,12 +36,10 @@ class GymWrapper:
         self.H = h
         self.actrep = actrep
         self.random_start = random_start
-        if hasattr(self.env.action_space, "n"):
-            self.action_space = list(range(self.env.action_space.n))
-        elif hasattr(self.env.action_space, "shape"):
-            self.action_space = list(np.eye(self.env.action_space.shape))
-        else:
-            raise ValueError("Environment %s: Unable to get action space size." % self.env.spec.id)
+        if not isinstance(self.env.action_space, spaces.Discrete):
+            raise ValueError("Unsupported environment's (%s) action space. Expected: %s, Got: %s." %
+                             (self.env.spec.id, self.env.action_space, spaces.Discrete))
+        self.action_space = list(range(self.env.action_space.n))
         self.action_size = len(self.action_space)
         self.stacked_s = None
         for key in __custom_actions__:
@@ -63,11 +60,11 @@ class GymWrapper:
         :param screen: array image in [0; 255] range with shape=[H, W, C]
         :param new_game: if True - repeats passed screen `memlen` times
                    otherwise - stacks with previous screens"
-        :type screen: numpy.array
+        :type screen: nd.array
         :type new_game: bool
         :return: image in [0.0; 1.0] stacked with last `memlen-1` screens; 
                 shape=[1, h, w, memlen]
-        :rtype: numpy.array"""
+        :rtype: nd.array"""
         gray = screen.astype('float32').mean(2)  # no need in true grayscale, just take mean
         # convert values into [0.0; 1.0] range
         s = imresize(gray, (self.W, self.H)).astype('float32') * (1. / 255)
@@ -81,13 +78,13 @@ class GymWrapper:
     def reset(self):
         """Resets current game.
         :return: preprocessed first screen of the next game
-        :rtype: numpy.array"""
+        :rtype: n.array"""
         return self.preprocess(self.env.reset(), new_game=True)
 
     def reset_random(self):
         """Resets current game and skips `self.random_start` amount of frames.
         :return: preprocessed first screen of the next game
-        :rtype: numpy.array"""
+        :rtype: nd.array"""
         s = self.env.reset()
         skip = random.randrange(self.random_start)
         for i in range(skip):
