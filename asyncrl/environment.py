@@ -120,8 +120,8 @@ class GymWrapper:
 
 class GymALE(GymWrapper):
     def __init__(self, env, actrep=4, memlen=4, w=84, h=84, random_start=30):
-        GymWrapper.__init__(self, env=env, actrep=actrep, memlen=memlen, w=w, h=h,
-                            random_start=random_start)
+        super(GymALE, self).__init__(env=env, actrep=actrep, memlen=memlen, w=w, h=h,
+                                     random_start=random_start)
         print('Creating a wrapper around Arcade Learning Environment')
         self.has_lives = hasattr(self.env, 'ale') and hasattr(self.env.ale, 'lives')
 
