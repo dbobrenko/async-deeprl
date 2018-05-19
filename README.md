@@ -1,7 +1,5 @@
 # Asynchronous Deep Reinforcement Learning
-**[> Intuition, implementation description and training results can be found here <](https://dbobrenko.github.io/2016/11/03/async-deeprl.html)**
-
-*Note: For more polished, tested and actively supported version of n-step DQN, please, check out **[ReinforceFlow](https://github.com/dbobrenko/reinforceflow)**.*
+**[Intuition, implementation description and training results can be found here.](https://dbobrenko.github.io/2016/11/03/async-deeprl.html)**
 
 An attempt to implement asynchronous one-step Q-Learning from Google DeepMind's paper ["Asynchronous Methods for Deep Reinforcement Learning", Mnih et al., 2016.](https://arxiv.org/abs/1602.01783)
 
@@ -13,8 +11,8 @@ Benchmarks for current implementation of Asynchronous one-step Q-Learning:
 
 | **Device**                                          | **Input shape** | **FPS** (skipped frames was not counted)  |
 |:----------------------------------------------------|:---------------:|:-----------------------------------------:|
-| GPU **GTX 980 Ti**                                  | 84x84x4         | **530**                                   |
-| CPU **Core i7-3770 @ 3.40GHz (4 cores, 8 threads)** | 84x84x4         | **300**                                   |
+| GPU **GTX 980 Ti**                                  | 84x84x4         | **~530**                                   |
+| CPU **Core i7-3770 @ 3.40GHz (4 cores, 8 threads)** | 84x84x4         | **~300**                                   |
 
 # Requirements
 1. Linux based OS or Mac OS X;
